@@ -54,20 +54,26 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
     }
     $uri = rtrim($uri,"/");
         
-    echo 'URI: ' . $uri;
+    echo "Result for $uri:";
     echo '<br />';
         
-    //if($req === "/"){
     if (strlen($req) - strlen('/HXL-Browser/') <= 0) {
+        echo '<p>The request is empty, so there is no result to display. Please, see <a href="emergencies/16107" >an example</a>.</p>';
+    } else {
+        displayQueryResults($uri);
+    }
+    
+        /*
+    if($req === "/"){
         echo "<p>No specific data have been requested; These are the last HXL data containers that have been submitted to get started:</p>";
-/*
+
         getResultsAndShowTable("", "SELECT ?container ?submitted " .
 "WHERE { ".
 "	GRAPH ?metadata { ".
 "		?container a <http://hxl.humanitarianresponse.info/#DataContainer> ; ".
 "                  <http://purl.org/dc/terms/created> ?submitted . " .
 "	} } ORDER BY DESC(?submitted) LIMIT 10", true, false);
- */
+ 
  
  
 ?>
@@ -78,9 +84,8 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
             <input id="search" />
         </div>
     </div>
-<?php 
+<?php          
     } else {
-        displayQueryResults($uri);
         
         /*
 		$container = false;
@@ -164,8 +169,8 @@ if($mapHTML != ''){
 	</script>
 
 <?php
- */
 }
+ */
 ?>
 
 </body>

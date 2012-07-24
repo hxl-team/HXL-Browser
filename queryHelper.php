@@ -22,8 +22,8 @@ function displayQueryResults($uri){
     // Make an updatable config file or an automatic mechanisme
     $namespaces = array(
         "http://xmlns.com/foaf/0.1/" => "foaf:",
-        "http://purl.org/dc/terms/" => "dct:",
-        "http://hxl.humanitarianresponse.info/#" => "hxl:",
+        "http://purl.org/dc/terms/" => "dc:",
+        "http://hxl.humanitarianresponse.info/ns/#" => "hxl:",
         "http://www.w3.org/2004/02/skos/core#" => "skos:",
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#" => "rdf:"
     );
@@ -31,58 +31,58 @@ function displayQueryResults($uri){
     // Normal URI http://hxl.humanitarianresponse.info/data/emergencies/16107
     // Project URI: http://localhost/HXL-Browser/emergencies/16107
     $query = "SELECT * { <$uri> ?predicate ?object . ";
-    $query .= "OPTIONAL { ?predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?predicateLabel } . ";
+    //$query .= "OPTIONAL { ?predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?predicateLabel } . ";
     $query .= "OPTIONAL { ?object <http://www.w3.org/2004/02/skos/core#prefLabel> ?objectLabel }";
     $query .= " }";
     $result = getQueryResults($query);
-
+    
+    /*
+    echo '<pre>';
+    print_r($result);
+    echo '</pre>';
+     * */
+        
     echo '<br />';
     echo '<table style="border: 1px solid #CACACA; width:100%;" >';
     echo '<tr><th>Property</th><th>Value</th></tr>';
 
     $i = 0;
-    while( $row = $result->fetch_array( $result ) ){
+    while( $row = $result->fetch_array() ){  
         $predicateDisplay = '';
         $objectDisplay = '';
 
         $predicate = $row["predicate"];
         $object = $row["object"];
 
-        // Attempt to use a label for the predicate
+        // PROPERTIES
+        // Attempt to shorten the namespace
         $predicateDisplay = $predicate;
-        if (array_key_exists('predicateLabel', $row)) {
-            $predicateDisplay = $row['predicateLabel'];
+        foreach ($namespaces as $key => $value) {
+            if (strpos($predicate, $key) !== false) {
+                $predicateDisplay = str_replace($key, $value, $predicate);
+            }
         }
-
-        // Replacing by the namespace
-        if ($predicateDisplay == $predicate) {
-            foreach ($namespaces as $key => $value) {
-
-                if (strpos($predicate, $key) !== false) {
-                    $predicateDisplay = str_replace($key, $value, $predicate);
-                }
-            }    
-        }
-
+        
         if ($i % 2 == 0){
             echo '<tr><td style="background: #AAAAAA">';
         } else{
             echo '<tr><td style="background: #CCCCCC">';
         }
-        echo "<a href='$predicate'>$predicateDisplay</a>" ;
+        echo "<a href='$predicate' target='_blank' >$predicateDisplay</a>" ;
         if ($i % 2 == 0){
             echo '</td><td style="background: #AAAAAA">';
         } else{
             echo '</td><td style="background: #CCCCCC">';
         }
 
-        // Attempt to use a label for the object
+        // VALUES
+        // Attempt to use a label
         $objectDisplay = $object;
         if (array_key_exists('objectLabel', $row)) {
             $objectDisplay = $row['objectLabel'];
         }
 
-        // Attempt to use a label for the object
+        // Attempt to shorten the namespace
         if ($objectDisplay == $object) {
             foreach ($namespaces as $key => $value) {
                 if (strpos($object, $key) !== false) {
@@ -90,12 +90,13 @@ function displayQueryResults($uri){
                 }
             }    
         }    
+        
         // Choosing link or litteral. Can be more generiby guessing if it is litteral
         if ($predicate == 'http://purl.org/dc/terms/date' ||
             $predicate == 'http://hxl.humanitarianresponse.info/ns/#commonTitle') {
             echo "$objectDisplay" ;
         } else {
-            echo "<a href='$object'>$objectDisplay</a>" ;
+            echo "<a href='$object' target='_blank' >$objectDisplay</a>" ;
         }
 
         echo '<br />';
@@ -103,7 +104,7 @@ function displayQueryResults($uri){
         $i++;
     } 
     echo '<table>';
-    echo '<br />';
+    echo '<span style="font-size:0.6em;" >Note: All links open in a new window.</span><br />';
     echo '<hr>';
     echo '<br />';        
     echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a>';
@@ -134,7 +135,7 @@ function getMapData($resource){
 	}
 	
 }
-
+*/
 // if there is a result field "Predicate", this function will look for a result field "Label" in the same row and try to display the label
 function getResultsAndShowTable($highlight , $query , $showHeaders, $group){	
 
@@ -249,5 +250,5 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 	}
 	print "</table>";
 }
-*/
+
 ?>
