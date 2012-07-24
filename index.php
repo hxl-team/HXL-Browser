@@ -42,26 +42,20 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
 
     $host = $_SERVER['HTTP_HOST'];
     $req = $_SERVER['REQUEST_URI'];
-    $uri = '';
-	
-    //URI translation for local testing
-    $pos = strpos('humanitarianresponse', $host);
     
-    if ($pos === true) {
-        $uri = 'http://'.$host.$req;
-    } else {
-        $uri = 'http://hxl.humanitarianresponse.info/data/' . substr($req, strlen('/HXL-Browser/'));
-    }
-    $uri = rtrim($uri,"/");
-        
+    $uri = buildUri ($host, $req);
+	
     echo "Result for $uri:";
-    echo '<br />';
+    
+    if (!displayQueryResults($uri)){
+        if (stristr($host, 'humanitarianresponse')) {
+            echo '<p>The request is empty, so there is no result to display. Please, see <a href="/data/emergencies/16107" >an example</a>.</p>';
+        } else { // works only with a test case when the project is in the /HXL-Browser/ foldder
+            echo '<p>The request is empty, so there is no result to display. Please, see <a href="/HXL-Browser/emergencies/16107" >an example</a>.</p>';
+        }
         
-    if (strlen($req) - strlen('/HXL-Browser/') <= 0) {
-        echo '<p>The request is empty, so there is no result to display. Please, see <a href="emergencies/16107" >an example</a>.</p>';
-    } else {
-        displayQueryResults($uri);
     }
+    
     
         /*
     if($req === "/"){

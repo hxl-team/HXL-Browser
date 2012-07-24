@@ -1,15 +1,37 @@
 <?php
-
+/*
+ * Building the URI, taking into account a possible testing environment.
+ */
+function buildUri($host, $req) {
+    $uri ='';
+    
+    try {
+        if (stristr($host, 'humanitarianresponse')) {
+            $uri = 'http://'.$host.$req;
+        } else { // works only with a test case when the project is in the /HXL-Browser/ foldder
+            $uri = 'http://hxl.humanitarianresponse.info/data/' . substr($req, strlen('/HXL-Browser/'));
+        }
+        $uri = rtrim($uri,"/");
+    } catch (Exception $e) {
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+    }
+	return $uri;
+}
 
 /*
-$mapHTML = '';
-*/
+ * Gives the result of the SPARQL query.
+ */
 function getQueryResults($query){
     try {
         $db = sparql_connect( "http://hxl.humanitarianresponse.info/sparql" );
-        if( !$db ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
+        
+        if( !$db ) {
+            print $db->errno() . ": " . $db->error(). "\n"; exit;
+        }
         $result = $db->query($query);
-        if( !$result ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
+        if( !$result ) {
+            print $db->errno() . ": " . $db->error(). "\n"; exit;
+        }
 
     } catch (Exception $e) {
         echo 'Caught exception: ',  $e->getMessage(), "\n";
@@ -36,6 +58,8 @@ function displayQueryResults($uri){
     $query .= " }";
     $result = getQueryResults($query);
     
+    if ($result->num_rows() == 0) return false;
+    
     /*
     echo '<pre>';
     print_r($result);
@@ -45,7 +69,7 @@ function displayQueryResults($uri){
     echo '<br />';
     echo '<table style="border: 1px solid #CACACA; width:100%;" >';
     echo '<tr><th>Property</th><th>Value</th></tr>';
-
+    
     $i = 0;
     while( $row = $result->fetch_array() ){  
         $predicateDisplay = '';
@@ -58,7 +82,7 @@ function displayQueryResults($uri){
         // Attempt to shorten the namespace
         $predicateDisplay = $predicate;
         foreach ($namespaces as $key => $value) {
-            if (strpos($predicate, $key) !== false) {
+            if (stristr($predicate, $key)) {
                 $predicateDisplay = str_replace($key, $value, $predicate);
             }
         }
@@ -85,7 +109,7 @@ function displayQueryResults($uri){
         // Attempt to shorten the namespace
         if ($objectDisplay == $object) {
             foreach ($namespaces as $key => $value) {
-                if (strpos($object, $key) !== false) {
+                if (stristr($object, $key)) {
                     $objectDisplay = str_replace($key, $value, $object);
                 }
             }    
@@ -112,7 +136,10 @@ function displayQueryResults($uri){
     echo 'Query: ' . htmlspecialchars($query);
     echo '<br />';
 }
-/*
+
+/* old code
+$mapHTML = '';
+
 function isDateProp($prop){
 	$query = "ASK { GRAPH <http://hxl.carsten.io/graph/hxlvocab>{<$prop> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://hxl.humanitarianresponse.info/#datetimeSection>}}";
 	$result = getQueryResults($query);
@@ -135,7 +162,7 @@ function getMapData($resource){
 	}
 	
 }
-*/
+
 // if there is a result field "Predicate", this function will look for a result field "Label" in the same row and try to display the label
 function getResultsAndShowTable($highlight , $query , $showHeaders, $group){	
 
@@ -250,5 +277,5 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 	}
 	print "</table>";
 }
-
+*/
 ?>
