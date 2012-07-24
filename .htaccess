@@ -1,0 +1,14 @@
+# Redirect non successful queries to HXL-Browser/index.php.
+
+<IfModule mod_rewrite.c>   
+RewriteEngine On 
+# only one .htaccess needed
+RewriteBase / 
+# stops parsing when it meets index.php
+RewriteRule ^index\.php$ - [L] 
+# If the request is for a real directory (one that exists on the server), index.php isn't served.
+RewriteCond %{REQUEST_FILENAME} !-f 
+# If the request is for a file that exists already on the server, index.php isn't served. 
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteRule . /HXL-Browser/index.php [L]   
+</IfModule> 
