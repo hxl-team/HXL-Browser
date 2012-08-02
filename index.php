@@ -45,15 +45,10 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
     
     $uri = buildUri ($host, $req);
 	
-    echo "Result for $uri:";
+    echo "<h3>Result for $uri:</h3>";
     
     if (!displayQueryResults($uri)){
-        if (stristr($host, 'humanitarianresponse')) {
-            echo '<p>The request is empty, so there is no result to display. Please, see <a href="/data/emergencies/16107" >an example</a>.</p>';
-        } else { // works only with a test case when the project is in the /HXL-Browser/ foldder
-            echo '<p>The request is empty, so there is no result to display. Please, see <a href="/HXL-Browser/emergencies/16107" >an example</a>.</p>';
-        }
-        
+        echo "<p>The URL doesn't provide with any result. Please, see <a href='/data/emergencies/16107' >a working example</a>.</p>";
     }
     
     

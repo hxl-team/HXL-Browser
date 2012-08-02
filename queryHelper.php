@@ -65,7 +65,11 @@ function displayQueryResults($uri){
     print_r($result);
     echo '</pre>';
      * */
-        
+           
+    echo 'Query: ' . htmlspecialchars($query);
+    echo '<br />';
+    echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a>.<br />';
+    echo '<br />';
     echo '<br />';
     echo '<table style="border: 1px solid #CACACA; width:100%;" >';
     echo '<tr><th>Property</th><th>Value</th></tr>';
@@ -88,15 +92,15 @@ function displayQueryResults($uri){
         }
         
         if ($i % 2 == 0){
-            echo '<tr><td style="background: #AAAAAA">';
+            echo '<tr><td style="background: #DDDDDD">';
         } else{
-            echo '<tr><td style="background: #CCCCCC">';
+            echo '<tr><td style="background: #EEEEEE">';
         }
         echo "<a href='$predicate' target='_blank' >$predicateDisplay</a>" ;
         if ($i % 2 == 0){
-            echo '</td><td style="background: #AAAAAA">';
+            echo '</td><td style="background: #DDDDDD">';
         } else{
-            echo '</td><td style="background: #CCCCCC">';
+            echo '</td><td style="background: #EEEEEE">';
         }
 
         // VALUES
@@ -130,11 +134,9 @@ function displayQueryResults($uri){
     echo '<table>';
     echo '<span style="font-size:0.6em;" >Note: All links open in a new window.</span><br />';
     echo '<hr>';
-    echo '<br />';        
-    echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a>';
     echo '<br />';
-    echo 'Query: ' . htmlspecialchars($query);
-    echo '<br />';
+    
+    return true;
 }
 
 /* old code
