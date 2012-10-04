@@ -9,119 +9,101 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="http://code.leafletjs.com/leaflet-0.3.1/leaflet.css" />
-    <!--[if lte IE 8]>
-        <link rel="stylesheet" href="http://code.leafletjs.com/leaflet-0.3.1/leaflet.ie.css" />
-    <![endif]-->
-    <link rel="stylesheet" type="text/css" href="http://hxl.carsten.io/style.css" />
-    <title>HXL Data Browser</title>
 
-    <link rel="stylesheet" href="css/ui-lightness/jquery-ui-1.8.18.custom.css" type="text/css" media="screen" title="no title" charset="utf-8">
-    <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.18.custom.min.js"></script> 
-    <script>
-    $(function() {
-                    $( "#search" ).autocomplete({
-                            source: "search.php",
-                            minLength: 2,
-                            select: function( event, ui ) {
-                                    window.location.href = ui.item.value;
-                            }
-                    });
-            });
-    </script>
+    <link rel="shortcut icon" href="http://hxl.humanitarianresponse.info/data/img/ochaonline_theme_favicon.ico">
+
+    <!-- jQuery -->
+    <script type='text/javascript' src="http://hxl.humanitarianresponse.info/data/lib/jquery-1.8.2.min.js"></script>
+
+    <!-- Bootstrap -->
+    <link href="http://hxl.humanitarianresponse.info/data/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script type='text/javascript' src="http://hxl.humanitarianresponse.info/data/lib/bootstrap/js/bootstrap.js"></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.css" />
+	<!--[if lte IE 8]>
+	    <link rel="stylesheet" href="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.ie.css" />
+	<![endif]-->
+	<script src="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.js"></script>
+
+
+	<script src="http://hxl.humanitarianresponse.info/data/js/browserDetection.js"></script>
+
+    <link href="http://hxl.humanitarianresponse.info/data/css/style.css" rel="stylesheet"> 
+
+    <title>HXL URI Browser</title>
 </head>
 
 <body>
 
-<h1><a href="http://hxl.carsten.io">HXL Data Browser</a></h1>
-
-<p>This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a>. This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.</p>
+<a href="http://hxl.humanitarianresponse.info/data/" class="btn btn-large" ><h1>HXL URI Browser</h1></a>
+<br />
+<br />
+<br />
+<p>
+	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a>.<br />
+	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
+</p>
 
 <?php 
 
-    $host = $_SERVER['HTTP_HOST'];
-    $req = $_SERVER['REQUEST_URI'];
-    
-    $uri = buildUri ($host, $req);
+$host = $_SERVER['HTTP_HOST'];
+$req = $_SERVER['REQUEST_URI'];
+$uri = "http://".$host.$req;
+
+if ($req === "/data/") {
+	echo "<p>No specific data have been requested; These are the last HXL data containers that have been submitted to get started:</p>";
 	
-    echo "<h3>Result for $uri:</h3>";
-    
-    if (!displayQueryResults($uri)){
-        echo "<p>The URL doesn't provide with any result. Please, see <a href='/data/emergencies/16107' >a working example</a>.</p>";
-    }
-    
-    
-        /*
-    if($req === "/"){
-        echo "<p>No specific data have been requested; These are the last HXL data containers that have been submitted to get started:</p>";
+	getResultsAndShowTable("", "SELECT ?container " .
+	"WHERE { ".
+	"	GRAPH ?metadata { ".
+	"		?container a <http://hxl.humanitarianresponse.info/ns/#DataContainer> ; ".
+	"	} } ORDER BY DESC(?submitted) LIMIT 10", true, false);
+	?>
 
-        getResultsAndShowTable("", "SELECT ?container ?submitted " .
-"WHERE { ".
-"	GRAPH ?metadata { ".
-"		?container a <http://hxl.humanitarianresponse.info/#DataContainer> ; ".
-"                  <http://purl.org/dc/terms/created> ?submitted . " .
-"	} } ORDER BY DESC(?submitted) LIMIT 10", true, false);
- 
- 
- 
-?>
-    <p>Your can also search the data we have:</p>
-    <div class="demo">
-        <div class="ui-widget">
-            <label for="search">Search term: </label>
-            <input id="search" />
-        </div>
-    </div>
-<?php          
-    } else {
-        
-        /*
-		$container = false;
-		$result = getQueryResults("SELECT DISTINCT ?type ?label	WHERE { GRAPH ?g {<" . $uri . "> a ?type} GRAPH <http://hxl.carsten.io/graph/hxlvocab> { OPTIONAL { ?type <http://www.w3.org/2004/02/skos/core#prefLabel> ?label } } }");
-		while( $row = $result->fetch_array( $result ) ){
-			$type = $row["type"];
-			$label = $row["label"];
-			if($type === "http://parliament.semwebcentral.org/parliament#NamedGraph"){
-				// ignore the interals
-			}else{
-				if($label){
-					echo "<h2>Data for <a href='" . $type. "'>" . $label . "</a> with ID <a href='".$uri."'>".$uri."</a></h2>" ; 
-				}else{
-					echo "<h2>Data for ID <a href='".$uri."'>".$uri."</a></h2>" ; 
-				}
-				if($type === "http://hxl.humanitarianresponse.info/#DataContainer"){
-					// for special handling of data containers:
-					$container = true;
-				}
-			} 
+<?php 
+} else {
+	$container = false;
+	$result = getQueryResults("SELECT DISTINCT ?type ?label	WHERE { GRAPH ?g {<" . $uri . "> a ?type} GRAPH <http://hxl.carsten.io/graph/hxlvocab> { OPTIONAL { ?type <http://www.w3.org/2004/02/skos/core#prefLabel> ?label } } }");
+
+	while ( $row = $result->fetch_array( $result ) ) {
+		$type = $row["type"];
+		$label = $row["label"];
+
+		if ($label) {
+			echo "<h4>Data for <a href='" . $type. "'>" . $label . "</a> with ID <a href='".$uri."'>".$uri."</a></h4>" ; 
+		} else if ($type === "http://hxl.humanitarianresponse.info/ns/#DataContainer") {
+			// for special handling of data containers:
+			$container = true;
+		} else {
+			echo "<h4>Data for ID <a href='".$uri."'>".$uri."</a></h4>" ; 
 		}
-				
-		if($container){
+	}
 			
-			echo '<h3>Metadata for this data container:</h3>';
+	if ($container) {
+		
+		echo '<h4>Metadata for this data container:</h4>';
 
-			getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object WHERE {
-			  GRAPH ?Graph { <$uri> ?Predicate ?Object . } FILTER (?Predicate != <http://parliament.semwebcentral.org/parliament#graphDirectory> && ?Object != <http://parliament.semwebcentral.org/parliament#NamedGraph>) GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, false);
-			
-			echo '<h3>Data in this container:</h3>';
-			
-			// get all triples in this container (aka. named graph), except those ABOUT the named graph because we already show those metadata above.
-			getResultsAndShowTable($uri, "SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", false, true);
-			
-		}else{
-			echo '<h3>Data about this ID:</h3>';
-			
-			getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", false, true);
-		}
-         */
+		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object WHERE {
+		  GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, false);
+		
+		echo '<h4>Data in this container:</h4>';
+		
+		// get all triples in this container (aka. named graph), except those ABOUT the named graph because we already show those metadata above.
+		getResultsAndShowTable($uri, "SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", false, true);
+		
+	} else {
+		
 
-/*
-if($mapHTML != ''){
+		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", false, true);
+	}
+}
+
+if ($mapHTML != '') {
 	
 	include_once('geoPHP.inc');
 	
-	echo '<h2>Map</h2>';
+	echo '<h4>Map</h4>';
 	echo '<p>Overview of the geodata attached to the data shown on this page.</p>';
 	echo '<div id="map" style="height: 400px"></div>';
 	
@@ -142,24 +124,22 @@ if($mapHTML != ''){
 	$json_geometry = $json_writer->write($geometry);
 	
 ?>
-	<script src="http://code.leafletjs.com/leaflet-0.3.1/leaflet.js"></script>
-	<script>
-		var map = new L.Map('map');
-		var cloudmade = new 	L.TileLayer('http://{s}.tile.cloudmade.com/f6fcfa0ce3c948d683a64fb3fa7833b5/997/256/{z}/{x}/{y}.png', {
-		    attribution: 'Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery Â© <a href=\"http://cloudmade.com\">CloudMade</a>',
-		    maxZoom: 18
-		});
-		var center = new L.LatLng(<?php echo $y; ?>, <?php echo $x; ?>); // geographical point (longitude and latitude)
-		map.setView(center, 6).addLayer(cloudmade);
-		var geojsonLayer = new L.GeoJSON();
-		geojsonLayer.addGeoJSON(<?php echo $json_geometry; ?>);
-		map.addLayer(geojsonLayer);
-		
-	</script>
+<script>
+	var map = new L.map('map');
+	var cloudmade = new 	L.TileLayer('http://{s}.tile.cloudmade.com/f6fcfa0ce3c948d683a64fb3fa7833b5/997/256/{z}/{x}/{y}.png', {
+	    attribution: 'Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://cloudmade.com\">CloudMade</a>',
+	    maxZoom: 18
+	});
+	var center = new L.LatLng(<?php echo $y; ?>, <?php echo $x; ?>); // geographical point (longitude and latitude)
+	map.setView(center, 6).addLayer(cloudmade);
+	var geojsonLayer = new L.GeoJSON();
+	geojsonLayer.addGeoJSON(<?php echo $json_geometry; ?>);
+	map.addLayer(geojsonLayer);
+	
+</script>
 
 <?php
 }
- */
 ?>
 
 </body>

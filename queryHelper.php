@@ -1,146 +1,28 @@
-<?php
-/*
- * Building the URI, taking into account a possible testing environment.
- */
-function buildUri($host, $req) {
-    $uri ='';
-    
-    try {
-        if (stristr($host, 'humanitarianresponse')) {
-            $uri = 'http://'.$host.$req;
-        } else { // works only with a test case when the project is in the /HXL-Browser/ foldder
-            $uri = 'http://hxl.humanitarianresponse.info/data/' . substr($req, strlen('/HXL-Browser/'));
-        }
-        $uri = rtrim($uri,"/");
-    } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
-    }
-	return $uri;
-}
 
-/*
- * Gives the result of the SPARQL query.
- */
-function getQueryResults($query){
-    try {
-        $db = sparql_connect( "http://hxl.humanitarianresponse.info/sparql" );
-        
-        if( !$db ) {
-            print $db->errno() . ": " . $db->error(). "\n"; exit;
-        }
-        $result = $db->query($query);
-        if( !$result ) {
-            print $db->errno() . ": " . $db->error(). "\n"; exit;
-        }
 
-    } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
-    }
-	return $result;
-}
+	<?php 
 
-function displayQueryResults($uri){
-    
-    // Make an updatable config file or an automatic mechanisme
-    $namespaces = array(
-        "http://xmlns.com/foaf/0.1/" => "foaf:",
-        "http://purl.org/dc/terms/" => "dc:",
-        "http://hxl.humanitarianresponse.info/ns/#" => "hxl:",
-        "http://www.w3.org/2004/02/skos/core#" => "skos:",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#" => "rdf:"
-    );
+require_once( "sparqllib.php" );
 
-    // Normal URI http://hxl.humanitarianresponse.info/data/emergencies/16107
-    // Project URI: http://localhost/HXL-Browser/emergencies/16107
-    $query = "SELECT * { <$uri> ?predicate ?object . ";
-    //$query .= "OPTIONAL { ?predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?predicateLabel } . ";
-    $query .= "OPTIONAL { ?object <http://www.w3.org/2004/02/skos/core#prefLabel> ?objectLabel }";
-    $query .= " }";
-    $result = getQueryResults($query);
-    
-    if ($result->num_rows() == 0) return false;
-    
-    /*
-    echo '<pre>';
-    print_r($result);
-    echo '</pre>';
-     * */
-           
-    echo 'Query: ' . htmlspecialchars($query);
-    echo '<br />';
-    echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a>.<br />';
-    echo '<br />';
-    echo '<br />';
-    echo '<table style="border: 1px solid #CACACA; width:100%;" >';
-    echo '<tr><th>Property</th><th>Value</th></tr>';
-    
-    $i = 0;
-    while( $row = $result->fetch_array() ){  
-        $predicateDisplay = '';
-        $objectDisplay = '';
 
-        $predicate = $row["predicate"];
-        $object = $row["object"];
-
-        // PROPERTIES
-        // Attempt to shorten the namespace
-        $predicateDisplay = $predicate;
-        foreach ($namespaces as $key => $value) {
-            if (stristr($predicate, $key)) {
-                $predicateDisplay = str_replace($key, $value, $predicate);
-            }
-        }
-        
-        if ($i % 2 == 0){
-            echo '<tr><td style="background: #DDDDDD">';
-        } else{
-            echo '<tr><td style="background: #EEEEEE">';
-        }
-        echo "<a href='$predicate' target='_blank' >$predicateDisplay</a>" ;
-        if ($i % 2 == 0){
-            echo '</td><td style="background: #DDDDDD">';
-        } else{
-            echo '</td><td style="background: #EEEEEE">';
-        }
-
-        // VALUES
-        // Attempt to use a label
-        $objectDisplay = $object;
-        if (array_key_exists('objectLabel', $row)) {
-            $objectDisplay = $row['objectLabel'];
-        }
-
-        // Attempt to shorten the namespace
-        if ($objectDisplay == $object) {
-            foreach ($namespaces as $key => $value) {
-                if (stristr($object, $key)) {
-                    $objectDisplay = str_replace($key, $value, $object);
-                }
-            }    
-        }    
-        
-        // Choosing link or litteral. Can be more generiby guessing if it is litteral
-        if ($predicate == 'http://purl.org/dc/terms/date' ||
-            $predicate == 'http://hxl.humanitarianresponse.info/ns/#commonTitle') {
-            echo "$objectDisplay" ;
-        } else {
-            echo "<a href='$object' target='_blank' >$objectDisplay</a>" ;
-        }
-
-        echo '<br />';
-        echo '</td></tr>';
-        $i++;
-    } 
-    echo '<table>';
-    echo '<span style="font-size:0.6em;" >Note: All links open in a new window.</span><br />';
-    echo '<hr>';
-    echo '<br />';
-    
-    return true;
-}
-
-/* old code
 $mapHTML = '';
+
+function getQueryResults($query){
+	
+    $db = sparql_connect( "http://hxl.humanitarianresponse.info/sparql" );
+	//$db = sparql_connect( "http://83.169.33.54:8080/parliament/sparql" );
+	if( !$db ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
+	
+//	foreach ($namespaces as $short => $long) {
+//		$db->ns( $short, $long );
+//	}
+
+	$result = $db->query( $query ); 
+	if( !$result ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
+
+	return $result;
+	
+}
 
 function isDateProp($prop){
 	$query = "ASK { GRAPH <http://hxl.carsten.io/graph/hxlvocab>{<$prop> <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> <http://hxl.humanitarianresponse.info/#datetimeSection>}}";
@@ -150,54 +32,78 @@ function isDateProp($prop){
 
 function getMapData($resource){
 	global $mapHTML;	
-	
-	
-	$query = "SELECT ?feature ?wkt WHERE { GRAPH ?g1 {<$resource> <http://hxl.humanitarianresponse.info/#hasGeometry> ?feature} 
-		GRAPH ?g2 {?feature <http://hxl.humanitarianresponse.info/#asWKT> ?wkt}}";
-	
-//	echo $query;
-	
+		
+	$query = "SELECT ?feature ?wkt WHERE { GRAPH ?g1 {<$resource> <http://www.opengis.net/ont/geosparql#hasGeometry> ?feature . ";
+	$query .= "?feature	<http://www.opengis.net/ont/geosparql#hasSerialization>	?wkt}}";
+	/*
+	echo "<br>";
+	echo htmlspecialchars($query);
+	echo "<br>";
+	*/
 	$result = getQueryResults($query);
 	while( $row = $result->fetch_array( $result ) ){		
-//		$mapHTML .= $resource . " at feature " . $row['feature'] . "; WKT: ". $row['wkt'] .'<br />';
 		$mapHTML .= $row['wkt'];
 	}
-	
 }
 
 // if there is a result field "Predicate", this function will look for a result field "Label" in the same row and try to display the label
 function getResultsAndShowTable($highlight , $query , $showHeaders, $group){	
 
+    $namespaces = array(
+        "http://xmlns.com/foaf/0.1/" => "foaf:",
+        "http://purl.org/dc/terms/" => "dc:",
+        "http://hxl.humanitarianresponse.info/ns/#" => "hxl:",
+        "http://www.w3.org/2004/02/skos/core#" => "skos:",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#" => "rdf:",
+        "http://www.opengis.net/ont/geosparql#" => "geo:"
+    );
 
+   /* echo '<br />';
+	echo 'Query: ' . htmlspecialchars($query);
+*/
 	$result = getQueryResults($query);
 	
+
 	$fields = $result->field_array( $result );
 	
 
-	print "<table>";
+
+    echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a><br />';
+    echo '<br />';
+    echo '<table class="table table-striped table-hover" style="width:100%;" >';//border: 1px solid #CACACA; 
+    
+	print "<thead>";
 	print "<tr>";
 	
-	if($showHeaders){
+	//if($showHeaders){
+			print "<th style=\"width: 10px;\" >#</th>";
 	foreach( $fields as $field ){
 		if($field == "Graph"){
-			print "<th></th>";
+			print "<th style=\"width: 30px;\" >Container</th>";
 		}else if($field == "Label"){
 			// nada
 		}else{
 			print "<th>$field</th>";
 		}
-	}}
+	}//}
 	
 	print "</tr>";
+	print "</thead>";
+	print "<tbody>";
 	$lastsubject = "";
-	
+	$value = '';
+	$display = '';
+    $i = 1;
 	while( $row = $result->fetch_array( $result ) )
 	{
 		$isDate = false;
 		print "<tr>";
+			echo '<td>';
+        	echo $i;
+			echo '</td>';
 		foreach( $fields as $field )
-		{			
-			if($row[$field] === 'http://hxl.humanitarianresponse.info/#atLocation'){
+		{
+			if($row[$field] === 'http://hxl.humanitarianresponse.info/ns/#atLocation'){
 				getMapData($row["Object"]);											
 			}
 			
@@ -230,10 +136,16 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 				$value=$row[$field];
 				$link=$row[$field];
 			}
-			$high = "";
+
+
+
+			/*$high = "";
 			if($value === $highlight){
 				$high = " class='highlight'";
 			}
+*/
+
+
 			if(substr($link,0,7) == 'http://'){
 				
 				if(isDateProp($link)){
@@ -241,28 +153,17 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 				}
 				
 				if($field == "Graph"){
-					$value = "<small><a href='$value'$high>[Metadata]</a></small>";
+					$value = "<a href='$value' class='btn btn-mini' >Container</a>";
 				}else{
-					if(($field == "Predicate") && (substr($value,0,7) == 'http://')){
-						// strip URIs of external vocabularies
-						$frags = explode("#", $value);
-						if(count($frags) == 2){
-							$value = $frags[1]; // hash uris
-						}else if (count($frags) == 1){
-							$frags = explode("/", $value);
-							$value = $frags[count($frags)-1]; // slash URIs
-						}
-						
-						$value = "<a href='$link'$high>$value</a>";
-					}else{
-						if(substr($value,0,22) == 'http://hxl.carsten.io/'){
-							$value = str_replace('http://hxl.carsten.io/', '', $value);
-							$value = str_replace('/', ':', $value);
-						}else if(substr($value,0,38) == 'http://hxl.humanitarianresponse.info/#'){
-							$value = str_replace('http://hxl.humanitarianresponse.info/#', 'hxl:', $value);
-						}
-						$value = "<a href='$link'$high>$value</a>";
-					}
+
+		        $display = $row[$field];
+		        foreach ($namespaces as $uri => $prefix ) {
+		            if (stristr($value, $uri)) {
+		                $display = str_replace($uri, $prefix, $value);
+		            }
+		        }
+
+				$value = "<a href='$link' class='btn btn-small' >$display</a>";
 				}				
 			}else{
 				// try to format date string:
@@ -273,11 +174,19 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 					} catch (Exception $e) { }
 				}				
 			}
-			print "<td>$value</td>";
+			echo '<td>';
+        	echo $value;
+			echo '</td>';
+
 		}
 		print "</tr>";
+        $i++;
 	}
+	print "</tbody>";
 	print "</table>";
 }
-*/
+
+
+
+
 ?>

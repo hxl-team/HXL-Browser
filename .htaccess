@@ -10,6 +10,6 @@ RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f 
 # If the request is for a file that exists already on the server, index.php isn't served. 
 RewriteCond %{REQUEST_FILENAME} !-d 
-# RewriteRule . /HXL-Browser/index.php [L] # for testing 
-RewriteRule . /data/index.php [L] # for production 
+RewriteRule . /data2/index.php [L] # for testing 
+# RewriteRule . /data/index.php [L] # for production 
 </IfModule> 

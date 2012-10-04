@@ -1,9 +1,9 @@
 body {
-	background: white;
-	color: black;
-	font-family: sans-serif;
-	margin: 0;
-	padding: 30px 20px 20px 20px;
+  background: white;
+  color: black;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 30px 20px 20px 20px;
 }
 
 a {
@@ -39,7 +39,7 @@ h1 {
   clear: both;
   font-size: 240%;
 line-height: 100%;
-  margin-top: 2em
+  /*margin-top: 2em*/
 }
 
 h2 {
@@ -99,8 +99,8 @@ ul.toc {
 
 
 h1, h2, h3 {
-  	stress: 20; 
-	richness: 90
+    stress: 20; 
+  richness: 90
 }
 
 .hide {
@@ -116,48 +116,48 @@ pre {
 }
 
 img{
-	max-width:900px;
+  max-width:900px;
 }
 
 table { 
-	width: 900px;
+  width: 900px;
 }
 
 th, td{
-	text-align: left; 
-	background: #F9F9F9;
-	padding: 0 3px;
+  text-align: left; 
+  background: #F9F9F9;
+  padding: 0 3px;
 }
 
 th{
-	width: 200px;
+  width: 200px;
 }
 
 div.index{
-	padding: 5px; 
-	border: dotted; 
-	background-color: #ddd;
+  padding: 5px; 
+  border: dotted; 
+  background-color: #ddd;
 }
 
 div#doc-link{
-	position: fixed;
-	right: 50px;
-	top: 0px;
-	z-index: 5;
-	background-color: #005a9c;
-	padding: 5px 10px;
+  position: fixed;
+  right: 50px;
+  top: 0px;
+  z-index: 5;
+  background-color: #005a9c;
+  padding: 5px 10px;
 }
 
 div#doc-link a {
-	color: white;
-	text-decoration: none;
+  color: white;
+  text-decoration: none;
 }
 
 p.intro{
-	clear:both;
-	padding-top: 15px;
+  clear:both;
+  padding-top: 15px;
 }
 
 p.intro img{
-	margin-left: 25px;
+  margin-left: 25px;
 }

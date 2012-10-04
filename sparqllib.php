@@ -333,3 +333,4 @@ table.sparql-results tr th { border: solid 1px #000 ; padding:4px;vertical-align
 	}
 
 }
+?>
