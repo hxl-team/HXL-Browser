@@ -2,8 +2,6 @@
 
 	<?php 
 
-require_once( "sparqllib.php" );
-
 
 $mapHTML = '';
 
@@ -47,7 +45,7 @@ function getMapData($resource){
 }
 
 // if there is a result field "Predicate", this function will look for a result field "Label" in the same row and try to display the label
-function getResultsAndShowTable($highlight , $query , $showHeaders, $group){	
+function getResultsAndShowTable($highlight , $query , $showHeaders, $group, $uri){	
 
     $namespaces = array(
         "http://xmlns.com/foaf/0.1/" => "foaf:",
@@ -70,7 +68,7 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 
     echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a><br />';
     echo '<br />';
-    echo '<table class="table table-striped table-hover" style="width:100%;" >';//border: 1px solid #CACACA; 
+    echo '<table class="table table-striped table-hover" style="width:100%;" >';
     
 	print "<thead>";
 	print "<tr>";
@@ -103,8 +101,10 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 			echo '</td>';
 		foreach( $fields as $field )
 		{
-			if($row[$field] === 'http://hxl.humanitarianresponse.info/ns/#atLocation'){
-				getMapData($row["Object"]);											
+			//if($row[$field] === 'http://hxl.humanitarianresponse.info/ns/#atLocation'){
+			if($row[$field] === 'http://www.opengis.net/ont/geosparql#hasGeometry'){
+				//getMapData($row["Object"]);		
+				getMapData($uri);											
 			}
 			
 			if($field == "Label"){
@@ -157,9 +157,9 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group){
 				}else{
 
 		        $display = $row[$field];
-		        foreach ($namespaces as $uri => $prefix ) {
-		            if (stristr($value, $uri)) {
-		                $display = str_replace($uri, $prefix, $value);
+		        foreach ($namespaces as $namespaceUri => $prefix ) {
+		            if (stristr($value, $namespaceUri)) {
+		                $display = str_replace($namespaceUri, $prefix, $value);
 		            }
 		        }
 

@@ -1,12 +1,13 @@
-<?php 
 
-require_once( "sparqllib.php" );
+    <?php 
+
+require_once( "lib/sparqllib.php" );
 require_once( "queryHelper.php" );
 
-echo'<?xml version="1.0" encoding="UTF-8"?>';
+//echo'<?xml version="1.0" encoding="UTF-8" ? > ';
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
-<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
@@ -19,12 +20,16 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
     <link href="http://hxl.humanitarianresponse.info/data/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
     <script type='text/javascript' src="http://hxl.humanitarianresponse.info/data/lib/bootstrap/js/bootstrap.js"></script>
 
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.css" />
-	<!--[if lte IE 8]>
-	    <link rel="stylesheet" href="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.ie.css" />
-	<![endif]-->
-	<script src="http://hxl.humanitarianresponse.info/data/lib/leaflet/leaflet.js"></script>
+    <!-- Leaflet --> 
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
+ <!--[if lte IE 8]>
+     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.ie.css" />
+ <![endif]-->
+  <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
+
+    <!--<script type='text/javascript' src='lib/leaflet/leaflet-google.js'></script>
+    <script type='text/javascript' src='lib/leaflet/Google.js'></script>-->
+    <!--<script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=false&amp;v=3.2'></script>-->
 
 
 	<script src="http://hxl.humanitarianresponse.info/data/js/browserDetection.js"></script>
@@ -32,6 +37,7 @@ echo'<?xml version="1.0" encoding="UTF-8"?>';
     <link href="http://hxl.humanitarianresponse.info/data/css/style.css" rel="stylesheet"> 
 
     <title>HXL URI Browser</title>
+
 </head>
 
 <body>
@@ -58,7 +64,7 @@ if ($req === "/data/") {
 	"WHERE { ".
 	"	GRAPH ?metadata { ".
 	"		?container a <http://hxl.humanitarianresponse.info/ns/#DataContainer> ; ".
-	"	} } ORDER BY DESC(?submitted) LIMIT 10", true, false);
+	"	} } ORDER BY DESC(?submitted) LIMIT 10", true, false, $uri);
 	?>
 
 <?php 
@@ -76,43 +82,44 @@ if ($req === "/data/") {
 			// for special handling of data containers:
 			$container = true;
 		} else {
-			echo "<h4>Data for ID <a href='".$uri."'>".$uri."</a></h4>" ; 
+			echo "<h3>Result for ID <a href='".$uri."'>".$uri."</a></h3>" ; 
 		}
 	}
-			
+?>
+
+<h4 id="mapTitle" style="display:none;" >Map</h4>
+<div id="map" style="display:none; width: 500px; height: 320px"></div>
+
+<?php
 	if ($container) {
 		
 		echo '<h4>Metadata for this data container:</h4>';
 
 		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object WHERE {
-		  GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, false);
+		  GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, false, $uri);
 		
 		echo '<h4>Data in this container:</h4>';
 		
 		// get all triples in this container (aka. named graph), except those ABOUT the named graph because we already show those metadata above.
-		getResultsAndShowTable($uri, "SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", false, true);
+		getResultsAndShowTable($uri, "SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", false, true, $uri);
 		
 	} else {
 		
-
-		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", false, true);
+		echo '<h4>Data:</h4>';
+		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", false, true, $uri);
 	}
 }
 
+
 if ($mapHTML != '') {
-	
-	include_once('geoPHP.inc');
-	
-	echo '<h4>Map</h4>';
-	echo '<p>Overview of the geodata attached to the data shown on this page.</p>';
-	echo '<div id="map" style="height: 400px"></div>';
-	
+	include_once('lib/geoPHP.inc');
+/*		
 	// quick and dirty function to convert KML to WKT
 	function kml_to_wkt($kml) {
 	  $geom = geoPHP::load($kml,'kml');
 	  return $geom->out('wkt');
 	}
-	
+*/	
 //	echo kml_to_wkt(file_get_contents("NC-3815-R21-001.kml"));
 
 	$wkt_reader = new WKT();
@@ -125,17 +132,35 @@ if ($mapHTML != '') {
 	
 ?>
 <script>
-	var map = new L.map('map');
-	var cloudmade = new 	L.TileLayer('http://{s}.tile.cloudmade.com/f6fcfa0ce3c948d683a64fb3fa7833b5/997/256/{z}/{x}/{y}.png', {
-	    attribution: 'Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://cloudmade.com\">CloudMade</a>',
+	document.getElementById('map').style.display = 'block';
+	document.getElementById('mapTitle').style.display = "block";
+
+/*
+        googleLayer = new L.Google('ROADMAP');
+        map.addLayer(googleLayer);
+
+    map.setView([12.367838, -1.530247], 6);
+*/
+var map = new L.map('map');
+	var cloudmade = new L.TileLayer('http://{s}.tile.cloudmade.com/{key}/997/256/{z}/{x}/{y}.png', {
+	    attribution: 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2012 CloudMade',
+		key: 'f6fcfa0ce3c948d683a64fb3fa7833b5',
 	    maxZoom: 18
 	});
 	var center = new L.LatLng(<?php echo $y; ?>, <?php echo $x; ?>); // geographical point (longitude and latitude)
 	map.setView(center, 6).addLayer(cloudmade);
 	var geojsonLayer = new L.GeoJSON();
-	geojsonLayer.addGeoJSON(<?php echo $json_geometry; ?>);
-	map.addLayer(geojsonLayer);
-	
+
+	var myLayer = [<?php echo $json_geometry; ?>];
+
+var myStyle = {
+    "weight": 5,
+    "opacity": 0.65
+};
+L.geoJson(myLayer, {
+    style: myStyle
+}).addTo(map);
+
 </script>
 
 <?php
