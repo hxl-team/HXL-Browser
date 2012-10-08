@@ -45,7 +45,7 @@ function getMapData($resource){
 }
 
 // if there is a result field "Predicate", this function will look for a result field "Label" in the same row and try to display the label
-function getResultsAndShowTable($highlight , $query , $showHeaders, $group, $uri){	
+function getResultsAndShowTable($query , $group, $uri){	
 
     $namespaces = array(
         "http://xmlns.com/foaf/0.1/" => "foaf:",
@@ -66,7 +66,7 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group, $uri
 	
 
 
-    echo '<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">Query link</a><br />';
+    echo '<small>[<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">See the sparql query and its raw result in a new tab</a></small>]<br />';
     echo '<br />';
     echo '<table class="table table-striped table-hover" style="width:100%;" >';
     
@@ -88,7 +88,7 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group, $uri
 	print "</tr>";
 	print "</thead>";
 	print "<tbody>";
-	$lastsubject = "";
+	//$lastsubject = "";
 	$value = '';
 	$display = '';
     $i = 1;
@@ -122,16 +122,16 @@ function getResultsAndShowTable($highlight , $query , $showHeaders, $group, $uri
 
 			}else if ($field == "Subject"){
 				// if grouping is on, only show the subject once:
-				if($group){
-					if($lastsubject != $row["Subject"]){
-						$lastsubject = $row["Subject"];					
+				//if($group){
+				//	if($lastsubject != $row["Subject"]){
+						//$lastsubject = $row["Subject"];					
 						$value=$row[$field];
 						$link=$row[$field];					
-					}else{
+				/*	}else{
 						$value="";
 						$link="";
 					}
-				}
+				}*/
 			}else{
 				$value=$row[$field];
 				$link=$row[$field];

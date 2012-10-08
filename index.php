@@ -42,12 +42,10 @@ require_once( "queryHelper.php" );
 
 <body>
 
-<a href="http://hxl.humanitarianresponse.info/data/" class="btn btn-large" ><h1>HXL URI Browser</h1></a>
-<br />
-<br />
+<h1 style="font-weight: bold;" ><a href="http://hxl.humanitarianresponse.info/data/"  style="text-decoration: none;" >HXL URI Browser</a></h1>
 <br />
 <p>
-	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a>.<br />
+	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a> and stored on UN OCHA's HXL Triple Store.<br />
 	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
 </p>
 
@@ -57,57 +55,82 @@ $host = $_SERVER['HTTP_HOST'];
 $req = $_SERVER['REQUEST_URI'];
 $uri = "http://".$host.$req;
 
-if ($req === "/data/") {
-	echo "<p>No specific data have been requested; These are the last HXL data containers that have been submitted to get started:</p>";
-	
-	getResultsAndShowTable("", "SELECT ?container " .
-	"WHERE { ".
-	"	GRAPH ?metadata { ".
-	"		?container a <http://hxl.humanitarianresponse.info/ns/#DataContainer> ; ".
-	"	} } ORDER BY DESC(?submitted) LIMIT 10", true, false, $uri);
-	?>
+$dataAvailable = false;
+$noQuery = false;
 
-<?php 
-} else {
+if ($req === "/data/")
+{
+	$noQuery = true;
+}
+else
+{
 	$container = false;
 	$result = getQueryResults("SELECT DISTINCT ?type ?label	WHERE { GRAPH ?g {<" . $uri . "> a ?type} GRAPH <http://hxl.carsten.io/graph/hxlvocab> { OPTIONAL { ?type <http://www.w3.org/2004/02/skos/core#prefLabel> ?label } } }");
 
-	while ( $row = $result->fetch_array( $result ) ) {
+	while ( $row = $result->fetch_array( $result ) )
+	{
+		$dataAvailable = true;
 		$type = $row["type"];
-		$label = $row["label"];
 
-		if ($label) {
-			echo "<h4>Data for <a href='" . $type. "'>" . $label . "</a> with ID <a href='".$uri."'>".$uri."</a></h4>" ; 
-		} else if ($type === "http://hxl.humanitarianresponse.info/ns/#DataContainer") {
-			// for special handling of data containers:
+		if ($type === "http://hxl.humanitarianresponse.info/ns/#DataContainer")
+		{
 			$container = true;
-		} else {
-			echo "<h3>Result for ID <a href='".$uri."'>".$uri."</a></h3>" ; 
 		}
 	}
-?>
+}
 
-<h4 id="mapTitle" style="display:none;" >Map</h4>
-<div id="map" style="display:none; width: 500px; height: 320px"></div>
+if ($container)
+{
+	/*echo "<br />";
+	echo "<p><div class=\"alert alert-success\">Request succesfull!</p></div>";*/
+	echo '<h4>Metadata for this data container:</h4>';
 
-<?php
-	if ($container) {
-		
-		echo '<h4>Metadata for this data container:</h4>';
+	getResultsAndShowTable("SELECT ?Predicate ?Label ?Object WHERE {
+	  GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, $uri);
+	
+	echo '<h4>Data in this container:</h4>';
+	
+	// get all triples in this container (aka. named graph), except those ABOUT the named graph because we already show those metadata above.
+	getResultsAndShowTable("SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", true, $uri);
+}
+else if ($dataAvailable)
+{
+	/*echo "<br />";
+	echo "<p><div class=\"alert alert-success\">Request succesfull!</p></div>";*/
+	echo "<h4 id=\"mapTitle\" style=\"display:none;\" >Map</h4>";
+	echo "<div id=\"map\" style=\"display:none; width: 500px; height: 320px; border:1px solid black;\" ></div>";
+	echo '<h4>Data:</h4>';
 
-		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object WHERE {
-		  GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label . }}}", false, false, $uri);
-		
-		echo '<h4>Data in this container:</h4>';
-		
-		// get all triples in this container (aka. named graph), except those ABOUT the named graph because we already show those metadata above.
-		getResultsAndShowTable($uri, "SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", false, true, $uri);
-		
-	} else {
-		
-		echo '<h4>Data:</h4>';
-		getResultsAndShowTable($uri, "SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", false, true, $uri);
+	getResultsAndShowTable("SELECT ?Predicate ?Label ?Object ?Graph WHERE { GRAPH ?Graph { <$uri> ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}}} ORDER BY ?Subject", true, $uri);
+}
+else if (!$dataAvailable)
+{
+	echo "<br />";
+	if ($noQuery)
+	{
+		echo "<div class=\"alert alert-info\"><p>No specific data has been requested.<br />To get you started, these are the last HXL data containers that have been submitted:</p></div>";
 	}
+	else
+	{
+		echo "<div class=\"alert alert-error\"><p>The URI didn't match any successful query.<br /> You may want to search throught the most recent HXL data containers:</p></div>";
+	}
+
+	getResultsAndShowTable("SELECT ?container " .
+	"WHERE { ".
+	"	GRAPH ?metadata { ".
+	"		?container a <http://hxl.humanitarianresponse.info/ns/#DataContainer> ; ".
+	"	} } ORDER BY DESC(?submitted) LIMIT 10", false, $uri);
+}
+else
+{
+	echo "<br />";
+	echo "<p><div class=\"alert alert-error\">An unexpected result occurred.<br />You may want to search throught the most recent HXL data containers:</p></div>";
+
+	getResultsAndShowTable("SELECT ?container " .
+	"WHERE { ".
+	"	GRAPH ?metadata { ".
+	"		?container a <http://hxl.humanitarianresponse.info/ns/#DataContainer> ; ".
+	"	} } ORDER BY DESC(?submitted) LIMIT 10", false, $uri);
 }
 
 
@@ -166,6 +189,9 @@ L.geoJson(myLayer, {
 <?php
 }
 ?>
-
+<br />
+	<p id="footer" style="text-align: center; border-top: 1px solid #005A9C;" >
+	    <a href="http://hxl.humanitarianresponse.info/">Powered by HXL</a>
+	</p> 
 </body>
 </html>

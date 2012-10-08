@@ -107,6 +107,11 @@ var BrowserDetect = {
 			   identity: "iPhone/iPod"
 	    },
 		{
+			string: navigator.userAgent,
+			subString: "Android",
+			identity: "Android"
+		},
+		{
 			string: navigator.platform,
 			subString: "Linux",
 			identity: "Linux"
@@ -114,27 +119,20 @@ var BrowserDetect = {
 	]
 
 };
-BrowserDetect.init();
 
-document.write("<div id='broCheck' class='alert alert-info' style='display: block;' >");
-document.write("You are using " + BrowserDetect.browser + " " + BrowserDetect.version + " on " + BrowserDetect.OS + ".");
+function printBrowserWarning () {
 
-document.write("<br />");
-if (BrowserDetect.browser == "Firefox" ||
-	BrowserDetect.browser == "Chrome" ) {
-	document.write("This is a good choice for navigating on this website.");
-} else if (BrowserDetect.browser == "Explorer") {
-	if (BrowserDetect.version < 8 ) {
-		document.write("This browser is too restrictive to see this website properly.");
-		document.write("<br />");
-		document.write("Instead, prefer <a href='http://www.mozilla.org/en-US/firefox/' target=\"_blank\" >Firefox</a> or <a href='http://www.google.com/chrome' target=\"_blank\" >Chrome</a>.");
-	} else {
-		document.write("This browser allows you to use this website but you may experience some graphic issues.");
-		document.write("<br />");
-		document.write("Instead, prefer <a href='http://www.mozilla.org/en-US/firefox/' target=\"_blank\" >Firefox</a> or <a href='http://www.google.com/chrome' target=\"_blank\" >Chrome</a>.");
+	if (BrowserDetect.browser != "Firefox" &
+		BrowserDetect.browser != "Chrome" ) {
+		document.write("<div id='broCheck' class='alert alert-info' style='display: block;' >");
+		document.write("You are using " + BrowserDetect.browser + " " + BrowserDetect.version + " on " + BrowserDetect.OS + ".");
+		document.write("<br>");
+		document.write("For a better user experience, prefer <a href='http://www.google.com/chrome' target=\"_blank\" >Chrome</a>.");
+		document.write("<a class='close' href='#' onclick='document.getElementById(\"broCheck\").style.display=\"none\";' >X</a></div>");
+
 	}
-} else {
-		
+
 }
 
-document.write("<a class='close' href='#' onclick='document.getElementById(\"broCheck\").style.display=\"none\";' >X</a></div>");
+BrowserDetect.init();
+printBrowserWarning();
