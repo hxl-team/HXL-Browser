@@ -31,9 +31,6 @@ require_once( "queryHelper.php" );
     <script type='text/javascript' src='lib/leaflet/Google.js'></script>-->
     <!--<script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=false&amp;v=3.2'></script>-->
 
-
-	<script src="http://hxl.humanitarianresponse.info/data/js/browserDetection.js"></script>
-
     <link href="http://hxl.humanitarianresponse.info/data/css/style.css" rel="stylesheet"> 
 
     <title>HXL URI Browser</title>
