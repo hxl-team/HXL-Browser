@@ -1,9 +1,53 @@
-
-
-	<?php 
+<?php 
 
 
 $mapHTML = '';
+
+function endsWith($haystack, $needle)
+{
+    $length = strlen($needle);
+    if ($length == 0) {
+        return true;
+    }
+
+    return (substr($haystack, -$length) === $needle);
+}
+
+
+function getBestSupportedMimeType($mimeTypes = null) {
+    // Values will be stored in this array
+    $AcceptTypes = Array ();
+
+    // Accept header is case insensitive, and whitespace isn’t important
+    $accept = strtolower(str_replace(' ', '', $_SERVER['HTTP_ACCEPT']));
+    // divide it into parts in the place of a ","
+    $accept = explode(',', $accept);
+    foreach ($accept as $a) {
+        // the default quality is 1.
+        $q = 1;
+        // check if there is a different quality
+        if (strpos($a, ';q=')) {
+            // divide "mime/type;q=X" into two parts: "mime/type" i "X"
+            list($a, $q) = explode(';q=', $a);
+        }
+        // mime-type $a is accepted with the quality $q
+        // WARNING: $q == 0 means, that mime-type isn’t supported!
+        $AcceptTypes[$a] = $q;
+    }
+    arsort($AcceptTypes);
+
+    // if no parameter was passed, just return parsed data
+    if (!$mimeTypes) return $AcceptTypes;
+
+    $mimeTypes = array_map('strtolower', (array)$mimeTypes);
+
+    // let’s check our supported types:
+    foreach ($AcceptTypes as $mime => $q) {
+       if ($q && in_array($mime, $mimeTypes)) return $mime;
+    }
+    // no mime-type found
+    return null;
+}
 
 function getQueryResults($query){
 	
@@ -66,9 +110,9 @@ function getResultsAndShowTable($query , $group, $uri){
 	
 
 
-    echo '<small>[<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">See the sparql query and its raw result in a new tab</a></small>]<br />';
+    // echo '<small>[<a href="http://sparql.carsten.io/?query=' . urlencode($query) . '&endpoint=http%3A//hxl.humanitarianresponse.info/sparql" target="_blank">See the sparql query and its raw result in a new tab</a></small>]<br />';
     echo '<br />';
-    echo '<table class="table table-striped table-hover" style="width:100%;" >';
+    echo '<table class="table table-bordered table-striped table-hover" style="width:100%;" >';
     
 	print "<thead>";
 	print "<tr>";
@@ -101,10 +145,10 @@ function getResultsAndShowTable($query , $group, $uri){
 			echo '</td>';
 		foreach( $fields as $field )
 		{
-			//if($row[$field] === 'http://hxl.humanitarianresponse.info/ns/#atLocation'){
-			if($row[$field] === 'http://www.opengis.net/ont/geosparql#hasGeometry'){
-				//getMapData($row["Object"]);		
-				getMapData($uri);											
+			if(isset($row[$field])){
+				if($row[$field] === 'http://www.opengis.net/ont/geosparql#hasGeometry'){
+					getMapData($uri);											
+				}	
 			}
 			
 			if($field == "Label"){
@@ -112,7 +156,7 @@ function getResultsAndShowTable($query , $group, $uri){
 				continue;
 			}else if ($field == "Predicate"){
 				// use the label if there is one
-				if($row["Label"]){
+				if(isset($row["Label"])){
 					$value=$row["Label"];
 					$link=$row["Predicate"];
 				}else{
@@ -120,31 +164,13 @@ function getResultsAndShowTable($query , $group, $uri){
 						$link=$row[$field];
 					}
 
-			}else if ($field == "Subject"){
-				// if grouping is on, only show the subject once:
-				//if($group){
-				//	if($lastsubject != $row["Subject"]){
-						//$lastsubject = $row["Subject"];					
+			}else if ($field == "Subject"){								
 						$value=$row[$field];
-						$link=$row[$field];					
-				/*	}else{
-						$value="";
-						$link="";
-					}
-				}*/
+						$link=$row[$field];									
 			}else{
 				$value=$row[$field];
 				$link=$row[$field];
 			}
-
-
-
-			/*$high = "";
-			if($value === $highlight){
-				$high = " class='highlight'";
-			}
-*/
-
 
 			if(substr($link,0,7) == 'http://'){
 				
@@ -167,16 +193,16 @@ function getResultsAndShowTable($query , $group, $uri){
 				}				
 			}else{
 				// try to format date string:
-				if($value.length > 0 && $isDate){
+				if(strlen($value) > 0 && $isDate){
 					try {
 				   		$date = new DateTime($value);
 						$value = $date->format('M d, Y \a\t H:i:s');
 					} catch (Exception $e) { }
 				}				
 			}
-			echo '<td>';
+			echo '<td><div class="uberflow">';
         	echo $value;
-			echo '</td>';
+			echo '</div></td>';
 
 		}
 		print "</tr>";
