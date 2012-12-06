@@ -3,7 +3,7 @@
 require_once( "lib/sparqllib.php" );
 require_once( "queryHelper.php" );
 
-// CHANGE THIS FOR PRODUCTION!
+// SWAP THESE FOR PRODUCTION / TESTING!
 //$host = "hxl.humanitarianresponse.info";
 $host = $_SERVER['HTTP_HOST'];
 $req = $_SERVER['REQUEST_URI'];
@@ -79,21 +79,12 @@ function returnHTML($uri){
     <!-- disable cache -->
     <meta http-equiv="expires" content="0"> 
     <meta http-equiv="pragma" content="no-cache"> 
-
-    <!-- Bootstrap -->
-    <link href="http://hxl.humanitarianresponse.info/data/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <style type="text/css">
-    	div.uberflow{
-    		max-height: 200px;
-    		overflow: scroll;
-    	}
-    </style>
-
+    
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     
-    <script type='text/javascript' src="js/bootstrap-min.js"></script>
+    <script type='text/javascript' src="http://hxl.humanitarianresponse.info/docs/js/bootstrap-min.js"></script>
 
     <!-- Leaflet --> 
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
@@ -107,6 +98,17 @@ function returnHTML($uri){
     <!--<script type='text/javascript' src='http://maps.google.com/maps/api/js?sensor=false&amp;v=3.2'></script>-->
 
     <link href="http://hxl.humanitarianresponse.info/docs/css/hxl.css" rel="stylesheet"> 
+    <style type="text/css">
+    	div.uberflow{
+    		max-height: 200px;
+    		overflow: scroll;
+    	}
+
+    	h1{
+    		margin-top: 30px;
+    	}
+    </style>
+
 
     <title>HXL URI Browser</title>
 <link rel="shortcut icon" href="img/favicon.ico">
@@ -129,25 +131,41 @@ function returnHTML($uri){
     	<div class="row-fluid">
 	     	<div class="span12">	     		
 
-<h1 style="font-weight: bold;" >HXL URI Browser</h1>
-<br />
-<p>
-	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a> and stored on UN OCHA's HXL Triple Store.<br />
-	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
-</p>
 
-<p>The data shown here is also available in several machine-readable RDF encodings: <code><a href="<?php echo $uri.'.ttl'; ?>">Turtle</a></code> <code><a href="<?php echo $uri.'.nt'; ?>">N-Triples</a></code> <code><a href="<?php echo $uri.'.rdf'; ?>">RDF+XML</a></code></p>
 
 <?php 
 
 $dataAvailable = false;
 $noQuery = false;
+$typeLabel = "";
+$label = "";
 
 if ($_SERVER['REQUEST_URI'] === "/data/") {
 	$noQuery = true;
 } else {
 	$container = false;
-	$result = getQueryResults("SELECT DISTINCT ?type ?label	WHERE { GRAPH ?g {<" . $uri . "> a ?type} GRAPH <http://hxl.carsten.io/graph/hxlvocab> { OPTIONAL { ?type <http://www.w3.org/2004/02/skos/core#prefLabel> ?label } } }");
+	$result = getQueryResults("prefix dc: <http://purl.org/dc/terms/> 
+prefix skos: <http://www.w3.org/2004/02/skos/core#> 
+prefix foaf: <http://xmlns.com/foaf/0.1/> 
+prefix hxl: <http://hxl.humanitarianresponse.info/ns/#>
+
+SELECT * WHERE { 
+  <" . $uri . "> a ?type .
+  
+  OPTIONAL {
+    ?type skos:prefLabel ?typeLabel .   	
+  }
+
+  OPTIONAL { 
+    { <" . $uri . "> skos:prefLabel ?label }
+    UNION
+    { <" . $uri . "> hxl:featureName ?label } 
+    UNION
+    { <" . $uri . "> foaf:Name ?label } 
+    UNION
+    { <" . $uri . "> dc:title ?label } 
+  } 		          
+} LIMIT 1");
 
 	while ( $row = $result->fetch_array( $result ) ){
 		$dataAvailable = true;
@@ -155,6 +173,14 @@ if ($_SERVER['REQUEST_URI'] === "/data/") {
 
 		if ($type === "http://hxl.humanitarianresponse.info/ns/#DataContainer") {
 			$container = true;
+		}
+
+		if(isset($row["typeLabel"])){
+			$typeLabel = $row["typeLabel"];
+		}		
+
+		if(isset($row["label"])){
+			$label = $row["label"];
 		}
 	}
 }
@@ -172,6 +198,32 @@ if ($container) {
 	getResultsAndShowTable("SELECT ?Subject ?Predicate ?Label ?Object WHERE { GRAPH <$uri> { ?Subject ?Predicate ?Object . } GRAPH <http://hxl.carsten.io/graph/hxlvocab>{OPTIONAL { ?Predicate <http://www.w3.org/2004/02/skos/core#prefLabel> ?Label.}} FILTER (?Subject != <$uri>) } ORDER BY ?Subject", true, $uri);
 
 } else if ($dataAvailable) {
+
+?> 
+
+
+
+<?php 
+
+	if ($label != ""){
+		echo '<h4 style="font-weight: bold;" >HXL URI Browser for <a href="'.$type.'">'.$typeLabel.'</a></h4>
+			  <h1>'.$label.'</h1>
+			  <p><strong>URI: <a href="'.$uri.'">'.$uri.'</a></strong></p>';
+	} else{
+		echo '<h4 style="font-weight: bold;" >HXL URI Browser for <a href="'.$type.'">'.$typeLabel.'</a> with URI</h4>
+			  <h3><a href="'.$uri.'">'.$uri.'</a></h3>';
+	}
+
+?>
+
+<p>
+	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a> and stored on UN OCHA's HXL Triple Store.<br />
+	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
+</p>
+
+<p>The data shown here is also available in several machine-readable RDF encodings: <code><a href="<?php echo $uri.'.ttl'; ?>">Turtle</a></code> <code><a href="<?php echo $uri.'.nt'; ?>">N-Triples</a></code> <code><a href="<?php echo $uri.'.rdf'; ?>">RDF+XML</a></code></p>
+
+<?php
 
 	echo "<h4 id=\"mapTitle\" style=\"display:none;\" >Map</h4>";
 	echo "<div id=\"map\" style=\"display:none; width: 500px; height: 320px; border:1px solid black;\" ></div>";
@@ -265,10 +317,7 @@ L.geoJson(myLayer, {
 		  <div class="span3"><strong>Legal</strong><br />
 		  &copy; 2012 UNOCHA</div>
 		</div>
-	</div>
-	  <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="js/bootstrap.min.js"></script> 
-    <script src="js/prettify.js"></script>
+	</div>	
   </body>
 </html>
 

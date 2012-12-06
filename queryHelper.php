@@ -117,8 +117,7 @@ function getResultsAndShowTable($query , $group, $uri){
 	print "<thead>";
 	print "<tr>";
 	
-	//if($showHeaders){
-			print "<th style=\"width: 10px;\" >#</th>";
+	print "<th style=\"width: 10px;\" >#</th>";
 	foreach( $fields as $field ){
 		if($field == "Graph"){
 			print "<th style=\"width: 30px;\" >Container</th>";
@@ -127,7 +126,7 @@ function getResultsAndShowTable($query , $group, $uri){
 		}else{
 			print "<th>$field</th>";
 		}
-	}//}
+	}
 	
 	print "</tr>";
 	print "</thead>";
