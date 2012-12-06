@@ -84,8 +84,6 @@ function returnHTML($uri){
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     
-    <script type='text/javascript' src="http://hxl.humanitarianresponse.info/docs/js/bootstrap-min.js"></script>
-
     <!-- Leaflet --> 
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
  <!--[if lte IE 8]>
@@ -111,7 +109,7 @@ function returnHTML($uri){
 
 
     <title>HXL URI Browser</title>
-<link rel="shortcut icon" href="img/favicon.ico">
+    <link rel="shortcut icon" href="http://hxl.humanitarianresponse.info/docs/img/favicon.ico">
   </head>
 
   <body>
@@ -187,6 +185,11 @@ SELECT * WHERE {
 
 if ($container) {
 
+	echo '<h4 style="font-weight: bold;" >HXL URI Browser for <a href="'.$type.'">'.$typeLabel.'</a> with URI</h4>
+			  <h3><a href="'.$uri.'">'.$uri.'</a></h3>';
+
+	explain($uri);
+
 	echo '<h4>Metadata for this data container:</h4>';
 
 	getResultsAndShowTable("SELECT ?Predicate ?Label ?Object WHERE {
@@ -214,16 +217,7 @@ if ($container) {
 			  <h3><a href="'.$uri.'">'.$uri.'</a></h3>';
 	}
 
-?>
-
-<p>
-	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a> and stored on UN OCHA's HXL Triple Store.<br />
-	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
-</p>
-
-<p>The data shown here is also available in several machine-readable RDF encodings: <code><a href="<?php echo $uri.'.ttl'; ?>">Turtle</a></code> <code><a href="<?php echo $uri.'.nt'; ?>">N-Triples</a></code> <code><a href="<?php echo $uri.'.rdf'; ?>">RDF+XML</a></code></p>
-
-<?php
+explain($uri);
 
 	echo "<h4 id=\"mapTitle\" style=\"display:none;\" >Map</h4>";
 	echo "<div id=\"map\" style=\"display:none; width: 500px; height: 320px; border:1px solid black;\" ></div>";

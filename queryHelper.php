@@ -13,6 +13,17 @@ function endsWith($haystack, $needle)
     return (substr($haystack, -$length) === $needle);
 }
 
+function explain($uri){
+?>	<p>
+	This browser shows data annotated with the <a href="http://hxl.humanitarianresponse.info">Humanitarian eXchange Language</a> and stored on UN OCHA's HXL Triple Store.<br />
+	This is a <b>test setup</b> and some of the data shown here may be inaccurate, outdated, or even entirely made up.
+</p>
+
+<p>The data shown here is also available in several machine-readable RDF encodings: <code><a href="<?php echo $uri.'.ttl'; ?>">Turtle</a></code> <code><a href="<?php echo $uri.'.nt'; ?>">N-Triples</a></code> <code><a href="<?php echo $uri.'.rdf'; ?>">RDF+XML</a></code></p>
+
+<?php
+}
+
 
 function getBestSupportedMimeType($mimeTypes = null) {
     // Values will be stored in this array
