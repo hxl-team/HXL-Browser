@@ -71,7 +71,7 @@ function returnHTML($uri){
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Humanitarian eXchange Language Documentation</title>
+    <title>HXL URI Browser</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -99,7 +99,7 @@ function returnHTML($uri){
     <style type="text/css">
     	div.uberflow{
     		max-height: 200px;
-    		overflow: scroll;
+    		overflow: auto;
     	}
 
     	h1{
@@ -300,16 +300,14 @@ L.geoJson(myLayer, {
 </div>
 <div class="container footer">
 		<div class="row">
-		  <div class="span3"><strong>Contact</strong><br />
-		  This site is part of the HumanitarianResponse network. Write to 
-		  <a href="mailto:info@humanitarianresponse.info">info@humanitarianresponse.info</a> for more information.</div>
-		  <div class="span3"><strong>Updates</strong><br />
-		  This part of the docs has been last updated on <strong><?php // echo date("M d, Y", filemtime(pathinfo($_SERVER['REQUEST_URI'])['basename']));  ?> Nov 8, 2012</strong> by <a href="http://carsten.io">Carsten Keßler</a>.
-      </div>
-      <div class="span3"><strong>Elsewhere</strong><br />
-      The entire code for HXL and the tools we are building around the standard is available on <a href="https://github.com/hxl-team">GitHub</a>.</div>      
-		  <div class="span3"><strong>Legal</strong><br />
-		  &copy; 2012 UNOCHA</div>
+			<div class="span3"><strong>Contact</strong><br />
+		  	This site is part of the HumanitarianResponse network. Write to 
+		  	<a href="mailto:info@humanitarianresponse.info">info@humanitarianresponse.info</a> for more information.</div>		  
+      		<div class="span3"><strong>Elsewhere</strong><br />
+      		The entire code for HXL and the tools we are building around the standard is available on <a href="https://github.com/hxl-team">GitHub</a>.</div>      
+		  	<div class="span3"><strong>Legal</strong><br />
+		  	&copy; 2012 UNOCHA</div>
+		  	<div class="span3"></div>
 		</div>
 	</div>	
   </body>

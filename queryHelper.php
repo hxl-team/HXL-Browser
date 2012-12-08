@@ -210,9 +210,15 @@ function getResultsAndShowTable($query , $group, $uri){
 					} catch (Exception $e) { }
 				}				
 			}
-			echo '<td><div class="uberflow">';
-        	echo $value;
-			echo '</div></td>';
+			echo '<td>';
+
+			if (strlen($value) > 200) {
+				echo '<div class="uberflow">'.$value.'</div>';
+			}else{
+				echo $value;
+			}
+				
+			echo '</td>';
 
 		}
 		print "</tr>";
